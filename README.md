@@ -29,7 +29,12 @@
   - [Labels & Selectors](#labels--selectors)
   - [Taints and Tolerations](#taints-and-tolerations)
   - [Manually Scheduling Pods](#manually-scheduling-pods)
-  - [Monitoring Cluster and Application Components (5%)](#monitoring-cluster-and-application-components-5)
+  - [Monitoring Cluster and Application Components (5% of the Exam)](#monitoring-cluster-and-application-components-5-of-the-exam)
+  - [Cluster Maintenance (11% of the Exam)](#cluster-maintenance-11-of-the-exam)
+    - [Upgrading Kubernetes Components using kubeadm](#upgrading-kubernetes-components-using-kubeadm)
+    - [Upgrading Worker Nodes](#upgrading-worker-nodes)
+    - [Upgrading OS on Nodes](#upgrading-os-on-nodes)
+  - [Troubleshooting](#troubleshooting)
 ## Useful Links
 
 [Infrastructure for container projects - LXC, LXD & LXCFS](https://linuxcontainers.org/) 
@@ -281,7 +286,7 @@ Join [K8s announcement group](https://groups.google.com/forum/#!forum/kubernetes
 
 ## [Manually Scheduling Pods](https://kubernetes.io/docs/concepts/configuration/assign-pod-node/)
 
-## Monitoring Cluster and Application Components (5%)
+## Monitoring Cluster and Application Components (5% of the Exam)
 
 - cAdvisor exposes simple UI for local containers on port 4194(default)
 - [metric-server](https://kubernetes.io/docs/tasks/debug-application-cluster/core-metrics-pipeline/) (< K8s v1.8)
@@ -311,7 +316,7 @@ Join [K8s announcement group](https://groups.google.com/forum/#!forum/kubernetes
 
       ![node-logging-agent](https://d33wubrfki0l68.cloudfront.net/2585cf9757d316b9030cf36d6a4e6b8ea7eedf5a/1509f/images/docs/user-guide/logging/logging-with-node-agent.png)
 
-      - Because the logging agent must run on every node, it’s common to implement it as either a `DaemonSet replica`
+      - Because the logging agent must run on every node, it's implemented as`DaemonSet replica`
       - Best suties only for applications emitting logs to `stdout` and `stderr`
 
       [Streaming sidecar container](https://kubernetes.io/docs/concepts/cluster-administration/logging/#using-a-sidecar-container-with-the-logging-agent)
@@ -328,4 +333,55 @@ Join [K8s announcement group](https://groups.google.com/forum/#!forum/kubernetes
 
       ![sidecar-container-with-logging-agent](https://d33wubrfki0l68.cloudfront.net/d55c404912a21223392e7d1a5a1741bda283f3df/c0397/images/docs/user-guide/logging/logging-with-sidecar-agent.png)
 
-      - [ConfigMaps](https://kubernetes.io/docs/tasks/configure-pod-container/configure-pod-configmap/) are used to configure the configuration for logging-agents like - [Fluend](https://kubernetes.io/docs/tasks/debug-application-cluster/logging-elasticsearch-kibana/), [Splunk](http://jasonpoon.ca/kubernetes-logging-with-splunk/)
+      - [ConfigMaps](https://kubernetes.io/docs/tasks/configure-pod-container/configure-pod-configmap/) are used to configure the configuration for logging-agents like - [Fluend](https://kubernetes.io/docs/tasks/debug-application-cluster/logging-elasticsearch-kibana/), [Splunk](http://jasonpoon.ca/kubernetes-logging-with-splunk/) (or) [Splunkforwarder-with-DeploymentServer](https://medium.com/@swarupdonepudi/setup-splunk-on-kubernetes-94716dab0e9)
+
+## Cluster Maintenance (11% of the Exam)
+
+### Upgrading Kubernetes Components using [kubeadm](https://kubernetes.io/docs/reference/setup-tools/kubeadm/kubeadm-upgrade/)
+
+- We need to have a `kubeadm` Kubernetes cluster
+- Swap must be disabled
+- The cluster should use a static control plane and etcd pods.
+- Make sure you read the release notes carefully.
+- Make sure to back up any important components, such as app-level state stored in a database.
+- Upgrade `kubeadm` pkg using the pkg manager specific to OS - `yum` (or) `apt`
+- `kubeadm upgrade does not touch your workloads`, only components internal to Kubernetes, but `backups are always a best practice.
+- `All containers are restarted after upgrade,` because the container spec hash value is changed.
+- `You can upgrade only from one minor version to the next minor version.` That is, you cannot skip versions when you upgrade. For example, you can upgrade only from 1.10 to 1.11, not from 1.9 to 1.11.
+
+### Upgrading Worker Nodes
+
+- [Drain](https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands#drain) node in prepartion for maintenace by using `kubectl drain <node-name> --ignore-daemonsets`. The given node will be marked unschedulable to prevent new pods from arriving. `drain` evicts the pods if the APIServer supports [eviction](http://kubernetes.io/docs/admin/disruptions/). Otherwise, it will use normal DELETE to delete the pods.
+- If there are `DaemonSet-managed pods`, drain will not proceed without `--ignore-daemonsets`, and regardless it will not delete any DaemonSet-managed pods, because those pods would be immediately replaced by the DaemonSet controller, which ignores unschedulable markings
+- If there are any `PODS` that are neither mirror pods nor managed by ReplicationController, ReplicaSet, DaemonSet, StatefulSet or Job, then drain will not delete any pods unless you use `--force`.
+- `drain` waits for graceful termination. You should not operate on the machine until the command completes.
+- Upgrade `kubelet` pkg using the pkg manager specific to OS - `yum` (or) `apt`
+- Verify using `systemctl status kubelet` to ensure its still active upgrade the upgrade
+- Once Upgraded successfully finally [uncordon](https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands#uncordon) the node so its make as schedulable
+
+### Upgrading OS on Nodes
+
+- `drain` the node
+- Ensure all pods are evicted and node status is flagged as `NotReady, SchedulingDisabled`
+- As we are not going to bring same machine in to cluster we will delete the node from the know list of `kubeadm` using `kubectl delete node <node name>`
+- To add new upgraded server as node to cluster, follow these steps to get cluster join command with valid [token](https://kubernetes.io/docs/reference/setup-tools/kubeadm/kubeadm-token/)
+  - get available token list `kubeadm token list`
+  - if no tokens founds (or) expired generate a new token using `kubeadm token generate`
+  - create token to request the join command
+  
+    ```bash
+    kubeadm token create <token-from-generate-cmd> --ttl <h> --print-join-command
+    kubeadm join <master-ip>:6443 --token <token-provided> --discovery-token-ca-cert-hash sha256:<random-hash>
+    ```
+  
+  (or)
+
+  - Just use `kubeadm token create --print-join-command` to generate new token and print-join-command using one single command
+
+## Troubleshooting
+
+- Ensure `kubelet` process is up and running on nodes
+- Ensure`CNI plugin, kube-proxy`pods are running across the cluster nodes
+- Ensure if any `taints`and un-ignored `Tolerations`are cause of missing core service `PODS` on nodes, if so fix by updating necessary objects to unblock it
+- Use `kubectl describe node/pod <node-name/pod-name>` to look at the events to understand more about the status
+- Look at log files under `/var/log/containers`for core service `PODS`.

@@ -85,21 +85,19 @@ NAMESPACE     NAME                                                READY   STATUS
 default       nginx                                               1/1     Running   1          11h   10.244.1.3      deepakk3c.mylabserver.com   <none>
 kube-system   coredns-576cbf47c7-w9g2n                            1/1     Running   2          32h   10.244.0.6      deepakk1c.mylabserver.com   <none>
 ...
-kube-system   etcd-deepakk1c.mylabserver.com                      1/1     Running   2          32h   172.31.45.58    deepakk1c.mylabserver.com   <none>
-kube-system   kube-apiserver-deepakk1c.mylabserver.com            1/1     Running   2          32h   172.31.45.58    deepakk1c.mylabserver.com   <none>
-kube-system   kube-controller-manager-deepakk1c.mylabserver.com   1/1     Running   2          32h   172.31.45.58    deepakk1c.mylabserver.com   <none>
+kube-system   etcd-deepakk1c.mylabserver.com                      1/1     Running   2          32h   <master-api-server-ip>    deepakk1c.mylabserver.com   <none>
+kube-system   kube-apiserver-deepakk1c.mylabserver.com            1/1     Running   2          32h   <master-api-server-ip>    deepakk1c.mylabserver.com   <none>
+kube-system   kube-controller-manager-deepakk1c.mylabserver.com   1/1     Running   2          32h   <master-api-server-ip>    deepakk1c.mylabserver.com   <none>
 kube-system   kube-flannel-ds-amd64-28v7x                         1/1     Running   2          32h   172.31.40.165   deepakk2c.mylabserver.com   <none>
 ...
 kube-system   kube-proxy-4rnwb                                    1/1     Running   2          32h   172.31.40.165   deepakk2c.mylabserver.com   <none>
 ...
-kube-system   kube-scheduler-deepakk1c.mylabserver.com            1/1     Running   2          32h   172.31.45.58    deepakk1c.mylabserver.com   <none>
+kube-system   kube-scheduler-deepakk1c.mylabserver.com            1/1     Running   2          32h   <master-api-server-ip>    deepakk1c.mylabserver.com   <none>
 ```
 
 `kubectl get pods -n kube-system` - to pull all pods from a specific namespace
 
 `kubectl get pods -l key=value -o wise` - gives the result of all `PODS` using lable selector
-
-
 
 ## Deployments
 
@@ -119,9 +117,11 @@ kube-system   kube-scheduler-deepakk1c.mylabserver.com            1/1     Runnin
 
 `kubectl rollout undo deployment/deployment-name --to-revision=number` - to rollout the deployment on the fly to specific version of deployment and fix issues with-in new deployment and re-apply it using `kubectl apply -f filename`
 
-## ConfigMaps
+## ConfigMaps (or) `cm`
 
 `kubectl create configmap name --from-literal=key=value` - to create a simple configmap to define configuration/config varialbes that will be used/called with-in the application. You can pass in multiple key-value pairs. Each pair provided on the command line is represented as a separate entry in the data section of the ConfigMap.
+
+`kubectl get -n kube-system cm kubeadm-config -oyaml` - to get/view `configmaps` of kubeadm-config and show output is `yaml` format
 
 ## AutoScaling
 
@@ -132,7 +132,13 @@ kube-system   kube-scheduler-deepakk1c.mylabserver.com            1/1     Runnin
 `kubectl logs -lkey=value --all-containers --since=1h --tail=20` - show last 20 lines of logs since last 1hr of all containers with-in a `POD`matching to a [LabelSelector](https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors)(`-lkey=vaule`) 
 
 ## [Taints and Tolerations](https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/)
-
+˚
 `kubectl taint nodes node1 key=value:NoSchedule` - adding a taint to a node using
 
 `kubectl taint nodes node1 key:NoSchedule-` - remove the taint
+
+## [kubeadm upgrade](https://kubernetes.io/docs/reference/setup-tools/kubeadm/kubeadm-upgrade/#cmd-experimental-control-plane)
+
+`kubeadm upgrade plan [version] [flags]` - Check which versions are available to upgrade to and validate whether your current cluster is [upgradeable](https://kubernetes.io/docs/reference/setup-tools/kubeadm/kubeadm-upgrade/#synopsis). To skip the internet check, pass in the optional `version` parameter.
+
+`kubeadm upgrade apply [version]` - Upgrade your Kubernetes cluster to the specified version.
