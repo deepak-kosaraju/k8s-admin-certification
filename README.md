@@ -2,7 +2,7 @@
 - [Certified Kubernetes Administrator(CKA)](#certified-kubernetes-administratorcka)
   - [Useful Links](#useful-links)
   - [Basic Kubernetes Architecture](#basic-kubernetes-architecture)
-    - [Node Type and their Components](#node-type-and-their-components)
+    - [Node Type and their Components (19%)](#node-type-and-their-components-19)
   - [API Premitives (or) Cluster Objects](#api-premitives-or-cluster-objects)
     - [Common Cluster Objects](#common-cluster-objects)
     - [Names and UIDs](#names-and-uids)
@@ -27,6 +27,9 @@
     - [Installing Configuration Files](#installing-configuration-files)
   - [End-to-End Testing & Validation Nodes & the Cluster](#end-to-end-testing--validation-nodes--the-cluster)
   - [Labels & Selectors](#labels--selectors)
+  - [Taints and Tolerations](#taints-and-tolerations)
+  - [Manually Scheduling Pods](#manually-scheduling-pods)
+  - [Monitoring Cluster and Application Components (5%)](#monitoring-cluster-and-application-components-5)
 ## Useful Links
 
 [Infrastructure for container projects - LXC, LXD & LXCFS](https://linuxcontainers.org/) 
@@ -54,7 +57,7 @@
 
 ## [Basic Kubernetes Architecture](https://kubernetes.io/docs/concepts/architecture/cloud-controller/)
 
-### [Node Type and their Components](https://kubernetes.io/docs/concepts/overview/components/)
+### [Node Type and their Components](https://kubernetes.io/docs/concepts/overview/components/) (19%)
 
 - Master - cluster’s control plane with HA setup (or) single node instance
   - `kube-apiserver` - answers api call
@@ -265,3 +268,64 @@ Join [K8s announcement group](https://groups.google.com/forum/#!forum/kubernetes
   ```bash
   kubectl get pods -l 'environment in (production),tier in (frontend)'
   ```
+
+## [Taints and Tolerations](https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/)
+
+- Node affinity, described here, is a property of pods that attracts them to a set of nodes (either as a preference or a hard requirement). Taints are the opposite – they allow a node to repel a set of pods.
+- Taints and tolerations work together to ensure that pods are not scheduled onto inappropriate nodes. One or more taints are applied to a node; this marks that the node should not accept any pods that do not tolerate the taints. Tolerations are applied to pods, and allow (but do not require) the pods to schedule onto nodes with matching taints.
+  
+- [Example Use Caes](https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/#example-use-cases)
+- [Taint based Evictions](https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/#taint-based-evictions)
+
+- [Taint Nodes by Condition](https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/#taint-nodes-by-condition) beta in v1.12
+
+## [Manually Scheduling Pods](https://kubernetes.io/docs/concepts/configuration/assign-pod-node/)
+
+## Monitoring Cluster and Application Components (5%)
+
+- cAdvisor exposes simple UI for local containers on port 4194(default)
+- [metric-server](https://kubernetes.io/docs/tasks/debug-application-cluster/core-metrics-pipeline/) (< K8s v1.8)
+- [Logging](https://kubernetes.io/docs/concepts/cluster-administration/logging/)
+  - Good discussion on K8s issue in github  - [Kubernetes logging, journalD, fluentD, and Splunk, oh my!](https://github.com/kubernetes/kubernetes/issues/24677)
+  - [Logging at the node level](https://kubernetes.io/docs/concepts/cluster-administration/logging/#logging-at-the-node-level)
+    - Clustet setup using`kube-up.sh`configures [logrotate](https://linux.die.net/man/8/logrotate) tool to run each hour to rotate containers logs when log file exceeds `10MB (default`)
+    - Container engine/runtime can also rotate logs for example: [Docker Logging Drivers](https://docs.docker.com/config/containers/logging/configure/)
+  - [System Component Logs](https://kubernetes.io/docs/concepts/cluster-administration/logging/#system-component-logs)
+    - Two types of system components: those that run in a container and those that do not run in a container. For example:
+      - The Kubernetes scheduler and kube-proxy run in a container.
+      - The kubelet and container runtime, for example Docker, do not run in containers.
+    - On machines with `systemd`, the `kubelet` and `container runtime` write to `journald`. 
+    - If `systemd` is not present, they write to `.log` files in the `/var/log` directory. 
+    - System components inside containers always write to the `/var/log` directory,bypassing the default logging mechanism. They use the [glog](https://godoc.org/github.com/golang/glog) logging library. 
+      - Conventions for logging severity for these components can be found in the [development docs on logging](https://git.k8s.io/community/contributors/devel/logging.md)
+    - Logrotations happens either daily or once the size exceeds `100MB (default)`.
+  
+  - [Cluster-Level-Logging](https://kubernetes.io/docs/concepts/cluster-administration/logging/#cluster-level-logging-architectures)
+    - logs should have a separate storage and lifecycle independent of nodes, pods, or containers
+    - Here are some options:
+      - Use a `node-level logging agent` that runs on every node.
+      - Include a `dedicated streaming sidecar container` (or) `dedicated sidecar container with logging agent`for logging in an application pod.
+      - `Push logs directly` to a backend from within an application.
+
+      [Node-level Logging Agent](https://kubernetes.io/docs/concepts/cluster-administration/logging/#using-a-node-logging-agent)
+
+      ![node-logging-agent](https://d33wubrfki0l68.cloudfront.net/2585cf9757d316b9030cf36d6a4e6b8ea7eedf5a/1509f/images/docs/user-guide/logging/logging-with-node-agent.png)
+
+      - Because the logging agent must run on every node, it’s common to implement it as either a `DaemonSet replica`
+      - Best suties only for applications emitting logs to `stdout` and `stderr`
+
+      [Streaming sidecar container](https://kubernetes.io/docs/concepts/cluster-administration/logging/#using-a-sidecar-container-with-the-logging-agent)
+
+      ![streaming-sidecar-container](https://d33wubrfki0l68.cloudfront.net/c51467e219320fdd46ab1acb40867b79a58d37af/b5414/images/docs/user-guide/logging/logging-with-streaming-sidecar.png)
+
+      - The individual sidecar container streams application logs to its own `stdout` and `stderr`
+      - The sidecar container runs a logging agent, which is configured to pick up logs from an application container.
+      - The sidecar containers read logs from a file, a socket, or the journald.
+      - writing logs to a file and then streaming them to stdout can double disk usage
+      - If you have an application that writes to a single file, it’s generally better to set `/dev/stdout` as destination rather than implementing the streaming `sidecar container` approach.
+
+      [Sidecar Container with Logging Agent](https://kubernetes.io/docs/concepts/cluster-administration/logging/#using-a-sidecar-container-with-the-logging-agent)
+
+      ![sidecar-container-with-logging-agent](https://d33wubrfki0l68.cloudfront.net/d55c404912a21223392e7d1a5a1741bda283f3df/c0397/images/docs/user-guide/logging/logging-with-sidecar-agent.png)
+
+      - [ConfigMaps](https://kubernetes.io/docs/tasks/configure-pod-container/configure-pod-configmap/) are used to configure the configuration for logging-agents like - [Fluend](https://kubernetes.io/docs/tasks/debug-application-cluster/logging-elasticsearch-kibana/), [Splunk](http://jasonpoon.ca/kubernetes-logging-with-splunk/)
