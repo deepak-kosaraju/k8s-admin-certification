@@ -1,4 +1,5 @@
 # Certified Kubernetes Administrator(CKA)
+
 - [Certified Kubernetes Administrator(CKA)](#certified-kubernetes-administratorcka)
   - [Useful Links](#useful-links)
   - [Basic Kubernetes Architecture](#basic-kubernetes-architecture)
@@ -34,7 +35,13 @@
     - [Upgrading Kubernetes Components using kubeadm](#upgrading-kubernetes-components-using-kubeadm)
     - [Upgrading Worker Nodes](#upgrading-worker-nodes)
     - [Upgrading OS on Nodes](#upgrading-os-on-nodes)
+  - [Networking (11%)](#networking-11)
+    - [Node Networking Configuration](#node-networking-configuration)
+    - [Service Networking](#service-networking)
+      - [Types](#types)
+    - [Ingress](#ingress)
   - [Troubleshooting](#troubleshooting)
+  
 ## Useful Links
 
 [Infrastructure for container projects - LXC, LXD & LXCFS](https://linuxcontainers.org/) 
@@ -59,6 +66,8 @@
 [Resources](https://kubernetes.io/docs/tasks/administer-cluster/out-of-resource/)
 
 [Running Locally (non Minikube)](https://kubernetes.io/docs/getting-started-guides/alternatives/)
+
+[Monitoring Kubernetes with Prometheus](https://www.weave.works/technologies/monitoring-kubernetes-with-prometheus/)
 
 ## [Basic Kubernetes Architecture](https://kubernetes.io/docs/concepts/architecture/cloud-controller/)
 
@@ -378,8 +387,129 @@ Join [K8s announcement group](https://groups.google.com/forum/#!forum/kubernetes
 
   - Just use `kubeadm token create --print-join-command` to generate new token and print-join-command using one single command
 
-## Troubleshooting
+## Networking (11%)
 
+### Node Networking Configuration
+
+- `Master Node`
+  
+| Ports(over TCP) | Service                 |
+| --------------- | ----------------------- |
+| 6443            | API Server              |
+| 2379, 2380      | etcd server client API  |
+| 10250           | Kublet API              |
+| 10251           | kube-scheduler          |
+| 10252           | kube-controller-manager |
+| 10255           | read-only Kublet API    |
+
+- `Worker Node`
+
+| Ports(over TCP) | Service              |
+| --------------- | -------------------- |
+| 10250           | Kublet API           |
+| 10255           | read-only Kublet API |
+| 30000 - 32767   | NodePort Services    |
+
+### [Service Networking](https://kubernetes.io/docs/concepts/services-networking/service/)
+
+#### Types
+
+- Kubernetes ServiceTypes allow you to specify what kind of service you want [ The default is `ClusterIP`]
+  
+  Type values and their behaviors are:
+
+  - `ClusterIP`: Exposes the service on a cluster-internal IP. Choosing this value makes the service only reachable from within the cluster. This is the default ServiceType.
+  - `NodePort`: Exposes the service on each Node’s IP at a static port (the NodePort). A ClusterIP service, to which the NodePort service will route, is automatically created. You’ll be able to contact the NodePort service, from outside the cluster, by requesting <NodeIP>:<NodePort>.
+  - `LoadBalancer`: Exposes the service externally using a cloud provider’s load balancer. NodePort and ClusterIP services, to which the external load balancer will route, are automatically created.
+  - `ExternalName`: Maps the service to the contents of the externalName field (e.g. foo.bar.example.com), by returning a CNAME record with its value. No proxying of any kind is set up. This requires version 1.7 or higher of kube-dns.
+
+- [Spec](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.12/#servicespec-v1-core) for `Service` with Selector
+
+  ```yaml
+  kind: Service
+  apiVersion: v1
+  metadata:
+    name: my-service
+  spec:
+    selector:
+      app: MyApp
+    ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 9376
+  ```
+
+- [Spec](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.12/#servicespec-v1-core) for `Service` without Selector
+  - Services generally abstract access to Kubernetes Pods, but they can also abstract other kinds of backends. For example:
+    - You want to have an external database cluster in production, but in test you use your own databases.
+  
+    - You want to point your service to a service in another Namespace or on another cluster.
+
+    - You are migrating your workload to Kubernetes and some of your backends run outside of Kubernetes.
+  
+  In any of these scenarios you can define a service without a selector:
+
+  ```yaml
+  kind: Service
+  apiVersion: v1
+  metadata:
+    name: my-service
+  spec:
+    ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 9376
+  ```
+
+  and because this service has no selector, the corresponding Endpoints object will not be created. You can manually map the service to your own specific endpoints:
+
+  ```yaml
+  kind: Endpoints
+  apiVersion: v1
+  metadata:
+    name: my-service
+  subsets:
+    - addresses:
+        - ip: 1.2.3.4
+      ports:
+        - port: 9376
+  ```
+
+- Multi-Port Services
+
+  ```yaml
+  kind: Service
+  apiVersion: v1
+  metadata:
+    name: my-service
+  spec:
+    selector:
+      app: MyApp
+    ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 9376
+    - name: https
+      protocol: TCP
+      port: 443
+      targetPort: 9377
+  ```
+
+  _Note: Port names must only contain lowercase alphanumeric characters and -, and must begin & end with an alphanumeric character. 123-abc and web are valid, but 123\_abc and -web are not valid names._
+
+### [Ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/)
+
+- Manages external access to the services in a cluster, typically HTTP.
+- Provide load balancing, SSL termination and name-based virtual hosting.
+- Collection of rules that allow inbound connections
+- Exposes HTTP and HTTPS routes from outside the cluster to services within the cluster. Traffic routing is controlled by rules defined on the ingress resource.
+- An ingress does not expose arbitrary ports or protocols. Exposing services other than `HTTP` and `HTTPS` to the internet typically uses a service of type `Service.Type=NodePort` or `Service.Type=LoadBalancer`.
+
+
+
+## Troubleshooting
+  
 - Ensure `kubelet` process is up and running on nodes
 - Ensure`CNI plugin, kube-proxy`pods are running across the cluster nodes
 - Ensure if any `taints`and un-ignored `Tolerations`are cause of missing core service `PODS` on nodes, if so fix by updating necessary objects to unblock it
