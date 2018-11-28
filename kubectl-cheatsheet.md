@@ -1,5 +1,4 @@
 
-
 # [kubectl](https://kubernetes.io/docs/reference/kubectl/overview/) Command References
 
 ## Nodes
@@ -129,10 +128,10 @@ kube-system   kube-scheduler-deepakk1c.mylabserver.com            1/1     Runnin
 
 ## Logs
 
-`kubectl logs -lkey=value --all-containers --since=1h --tail=20` - show last 20 lines of logs since last 1hr of all containers with-in a `POD`matching to a [LabelSelector](https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors)(`-lkey=vaule`) 
+`kubectl logs -lkey=value --all-containers --since=1h --tail=20` - show last 20 lines of logs since last 1hr of all containers with-in a `POD`matching to a [LabelSelector](https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors)(`-lkey=vaule`)
 
 ## [Taints and Tolerations](https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/)
-˚
+
 `kubectl taint nodes node1 key=value:NoSchedule` - adding a taint to a node using
 
 `kubectl taint nodes node1 key:NoSchedule-` - remove the taint

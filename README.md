@@ -38,13 +38,21 @@
   - [Networking (11%)](#networking-11)
     - [Node Networking Configuration](#node-networking-configuration)
     - [Service Networking](#service-networking)
-      - [Types](#types)
+      - [ServiceTypes](#servicetypes)
     - [Ingress](#ingress)
+      - [Types of Ingress](#types-of-ingress)
+    - [DNS for Service and Pods](#dns-for-service-and-pods)
+    - [Network Policies](#network-policies)
+  - [Storage(7%)](#storage7)
+    - [Types of Volumens](#types-of-volumens)
+  - [Secuirty](#secuirty)
+    - [Secrets](#secrets)
+  - [Liveness and Readiness Probes](#liveness-and-readiness-probes)
   - [Troubleshooting](#troubleshooting)
   
 ## Useful Links
 
-[Infrastructure for container projects - LXC, LXD & LXCFS](https://linuxcontainers.org/) 
+[Infrastructure for container projects - LXC, LXD & LXCFS](https://linuxcontainers.org/)
  further reading on what are [LXD](https://help.ubuntu.com/lts/serverguide/lxd.html.en) and [LXC](https://help.ubuntu.com/lts/serverguide/lxc.html) container runtime technologies is highly recommended
 
 [Components](https://kubernetes.io/docs/concepts/overview/components/)
@@ -71,16 +79,18 @@
 
 ## [Basic Kubernetes Architecture](https://kubernetes.io/docs/concepts/architecture/cloud-controller/)
 
+![Architecture](https://lms.quickstart.com/custom/858487/images/Kubernetes%20Architecture.png)
+
 ### [Node Type and their Components](https://kubernetes.io/docs/concepts/overview/components/) (19%)
 
-- Master - cluster’s control plane with HA setup (or) single node instance
+- `Master` - cluster’s control plane with HA setup (or) single node instance
   - `kube-apiserver` - answers api call
   - `etcd` - key/value store used by API Server for configuration and other persistent storage needs
   - `kube-scheduler` - Determins which nodes are responsable for `PODS` and their respective containers as they are up in the cluster
   - `Cloud Controler Manager` - split out in to several containers depends on cloud platform we are running - responsible for persistatnt storage, routes for networking
   - `kube-controller-manager` - make all of the above avaialble to cloud through this service (or) we can block this if not needed
 
-- Nodes - workers/minions are work force of the cluster
+- `Nodes` - workers/minions are work force of the cluster
   - `kublet` - takes orders from master to run `PODS`
   - `kube-proxy` - assist with `Container Network Interface(CNI)` with routing traffic around the cluster
   - `POD` - one (or) more containers run as part of `POD` which are considered disposablea and replacable
@@ -107,7 +117,8 @@ K8s Objects are `records of intent`
 
 - [Nodes](https://kubernetes.io/docs/concepts/architecture/nodes/) - which makes the cluster
 - [PODS](https://kubernetes.io/docs/concepts/workloads/pods/pod-overview/) - single instance of application containers
-- [Deployments](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/) - LoadBalanced set of `PODS`
+- [Deployments](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/) - Controller for `PODS` and it ensures that resources are available, such as IP address, and storage and then deploys a `ReplicaSet`
+- [ReplicaSet](https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/) - controller which deploys and restart `PODS` until requested number of `PODS`are running.
 - [Services](https://kubernetes.io/docs/concepts/services-networking/service/) - Exposes deployments to external networks by means of 3rd party LoadBalancer (or) ingress rules
 - [ConfigMaps](https://kubernetes.io/docs/tasks/configure-pod-container/configure-pod-configmap/) - KV pair that can dynamically plugged in to other objects as needed which allows to decouple configuration from individual `PODS` (or) `Deployments` which gives lot of flexibility
 
@@ -308,9 +319,9 @@ Join [K8s announcement group](https://groups.google.com/forum/#!forum/kubernetes
     - Two types of system components: those that run in a container and those that do not run in a container. For example:
       - The Kubernetes scheduler and kube-proxy run in a container.
       - The kubelet and container runtime, for example Docker, do not run in containers.
-    - On machines with `systemd`, the `kubelet` and `container runtime` write to `journald`. 
-    - If `systemd` is not present, they write to `.log` files in the `/var/log` directory. 
-    - System components inside containers always write to the `/var/log` directory,bypassing the default logging mechanism. They use the [glog](https://godoc.org/github.com/golang/glog) logging library. 
+    - On machines with `systemd`, the `kubelet` and `container runtime` write to `journald`.
+    - If `systemd` is not present, they write to `.log` files in the `/var/log` directory.
+    - System components inside containers always write to the `/var/log` directory,bypassing the default logging mechanism. They use the [glog](https://godoc.org/github.com/golang/glog) logging library.
       - Conventions for logging severity for these components can be found in the [development docs on logging](https://git.k8s.io/community/contributors/devel/logging.md)
     - Logrotations happens either daily or once the size exceeds `100MB (default)`.
   
@@ -387,7 +398,7 @@ Join [K8s announcement group](https://groups.google.com/forum/#!forum/kubernetes
 
   - Just use `kubeadm token create --print-join-command` to generate new token and print-join-command using one single command
 
-## Networking (11%)
+## [Networking (11%)](https://kubernetes.io/docs/concepts/cluster-administration/networking/)
 
 ### Node Networking Configuration
 
@@ -412,16 +423,41 @@ Join [K8s announcement group](https://groups.google.com/forum/#!forum/kubernetes
 
 ### [Service Networking](https://kubernetes.io/docs/concepts/services-networking/service/)
 
-#### Types
+#### ServiceTypes
 
 - Kubernetes ServiceTypes allow you to specify what kind of service you want [ The default is `ClusterIP`]
   
   Type values and their behaviors are:
 
   - `ClusterIP`: Exposes the service on a cluster-internal IP. Choosing this value makes the service only reachable from within the cluster. This is the default ServiceType.
-  - `NodePort`: Exposes the service on each Node’s IP at a static port (the NodePort). A ClusterIP service, to which the NodePort service will route, is automatically created. You’ll be able to contact the NodePort service, from outside the cluster, by requesting <NodeIP>:<NodePort>.
+  - `NodePort`: Exposes the service on each Node’s IP at a static port (the NodePort). A ClusterIP service, to which the NodePort service will route, is automatically created. You’ll be able to contact the NodePort service, from outside the cluster, by requesting <NodeIP\>:<NodePort\>.
   - `LoadBalancer`: Exposes the service externally using a cloud provider’s load balancer. NodePort and ClusterIP services, to which the external load balancer will route, are automatically created.
   - `ExternalName`: Maps the service to the contents of the externalName field (e.g. foo.bar.example.com), by returning a CNAME record with its value. No proxying of any kind is set up. This requires version 1.7 or higher of kube-dns.
+
+- `LoadBalancer` - On cloud providers which support external load balancers, setting the type field to LoadBalancer will provision a load balancer for your Service. The actual creation of the load balancer happens asynchronously, and information about the provisioned balancer will be published in the Service’s .status.loadBalancer field. For example:
+
+  ```yaml
+  kind: Service
+  apiVersion: v1
+  metadata:
+    name: my-service
+  spec:
+    selector:
+      app: MyApp
+    ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 9376
+    clusterIP: 10.0.171.239
+    loadBalancerIP: 78.11.24.19
+    type: LoadBalancer
+  status: ## This information is published 
+    loadBalancer:
+      ingress:
+      - ip: 146.148.47.155
+  ```
+
+  _Note: **Special notes for Azure:** To use user-specified public type loadBalancerIP, a static type public IP address resource needs to be created first, and it should be in the same resource group of the other automatically created resources of the cluster. For example, `MC_myResourceGroup_myAKSCluster_eastus`. Specify the assigned IP address as loadBalancerIP. Ensure that you have updated the securityGroupName in the cloud provider configuration file. For information about troubleshooting `CreatingLoadBalancerFailed` permission issues see, [Use a static IP address with the Azure Kubernetes Service (AKS) load balancer or CreatingLoadBalancerFailed on AKS cluster with advanced networking](https://docs.microsoft.com/en-us/azure/aks/static-ip)._
 
 - [Spec](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.12/#servicespec-v1-core) for `Service` with Selector
 
@@ -498,6 +534,8 @@ Join [K8s announcement group](https://groups.google.com/forum/#!forum/kubernetes
 
   _Note: Port names must only contain lowercase alphanumeric characters and -, and must begin & end with an alphanumeric character. 123-abc and web are valid, but 123\_abc and -web are not valid names._
 
+  - Load Balancer
+
 ### [Ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/)
 
 - Manages external access to the services in a cluster, typically HTTP.
@@ -506,12 +544,98 @@ Join [K8s announcement group](https://groups.google.com/forum/#!forum/kubernetes
 - Exposes HTTP and HTTPS routes from outside the cluster to services within the cluster. Traffic routing is controlled by rules defined on the ingress resource.
 - An ingress does not expose arbitrary ports or protocols. Exposing services other than `HTTP` and `HTTPS` to the internet typically uses a service of type `Service.Type=NodePort` or `Service.Type=LoadBalancer`.
 
+  ```yaml
+  apiVersion: extensions/v1beta1
+  kind: Ingress
+  metadata:
+    name: test-ingress
+    annotations:
+      nginx.ingress.kubernetes.io/rewrite-target: /
+  spec:
+    rules:
+    - http:
+        paths:
+        - path: /testpath
+          backend:
+            serviceName: test
+            servicePort: 80
+
+  ```
+
+#### [Types of Ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/#types-of-ingress)
+
+- Single Service Ingress: 
+
+### [DNS for Service and Pods](https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/)
+
+### [Network Policies](https://kubernetes.io/docs/concepts/services-networking/network-policies/)
+
+## [Storage(7%)](https://kubernetes.io/docs/concepts/storage/volumes/)
+
+- Lifetime of volume is same as that of `POD`enclosing it
+- Volumes outlives any containers that run with the `POD`
+- To use a volume, a Pod specifies what volumes to provide for the Pod (the `.spec.volumes` field) and where to mount those into Containers (the `.spec.containers.volumeMounts` field).
+- Volumes can not mount onto other volumes or have hard links to other volumes
+
+### [Types of Volumens](https://kubernetes.io/docs/concepts/storage/volumes/#types-of-volumes)
+
+- `emptyDir`
+  - volume is first created when a Pod is assigned to a Node, and exists as long as that Pod is running on that node.
+  - When a `POD` [**not when container crashes**] is removed from a node for any reason, the data in the emptyDir is deleted forever.
+  - Some uses for an emptyDir are:
+    - scratch space, such as for a disk-based merge sort
+    - checkpointing a long computation for recovery from crashes
+    - holding files that a content-manager Container fetches while a webserver Container serves the data
+  - `emptyDir.medium` field in `.spec.containers.volumes` can be set to "**Memory**" to tell Kubernetes to mount a `tmpfs` (RAM-backed filesystem) for you instead, but files you write will count against your Container’s memory limit. **Beware**:  unlike disks, tmpfs is cleared on node reboot
+
+    ```yaml
+    apiVersion: v1
+    kind: Pod
+    metadata:
+      name: test-pd
+    spec:
+      containers:
+      - image: k8s.gcr.io/test-webserver
+        name: test-container
+        volumeMounts:
+        - mountPath: /cache
+          name: cache-volume
+      volumes:
+      - name: cache-volume
+        emptyDir: {}
+    ```
+- [azureDisk](https://github.com/kubernetes/examples/tree/master/staging/volumes/azure_disk/README.md)
+
+  ```yaml
+  ....
+      volumeMounts:
+      - name: azure
+        mountPath: /mnt/azure
+  volumes:
+        - name: azure
+          azureDisk:
+            diskName: test.vhd
+            diskURI: https://someaccount.blob.microsoft.net/vhds/test.vhd
+    ...
+    ```
+- [azureFile](https://github.com/kubernetes/examples/tree/master/staging/volumes/azure_file/README.md)
+
+- [downwardAPI](https://kubernetes.io/docs/tasks/inject-data-application/downward-api-volume-expose-pod-information/) -  is used to make `downward API` data available to applications. It mounts a directory and writes the requested data in plain text files.
+
+## Secuirty
+
+### [Secrets](https://kubernetes.io/docs/concepts/configuration/secret/)
+
+## [Liveness and Readiness Probes](https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/)
+
+- The kubelet uses liveness probes to know when to restart a Container. For example, liveness probes could catch a deadlock, where an application is running, but unable to make progress. Restarting a Container in such a state can help to make the application more available despite bugs.
+- The kubelet uses readiness probes to know when a Container is ready to start accepting traffic. A Pod is considered ready when all of its Containers are ready. One use of this signal is to control which Pods are used as backends for Services. When a Pod is not ready, it is removed from Service load balancers.
 
 
 ## Troubleshooting
   
 - Ensure `kubelet` process is up and running on nodes
-- Ensure`CNI plugin, kube-proxy`pods are running across the cluster nodes
+- Ensure `CNI plugin, kube-proxy` pods are running across the cluster nodes
 - Ensure if any `taints`and un-ignored `Tolerations`are cause of missing core service `PODS` on nodes, if so fix by updating necessary objects to unblock it
 - Use `kubectl describe node/pod <node-name/pod-name>` to look at the events to understand more about the status
 - Look at log files under `/var/log/containers`for core service `PODS`.
