@@ -45,6 +45,8 @@
     - [Network Policies](#network-policies)
   - [Storage(7%)](#storage7)
     - [Types of Volumens](#types-of-volumens)
+    - [PresistentVolume](#presistentvolume)
+    - [PresistentVolumeClaim](#presistentvolumeclaim)
   - [Secuirty](#secuirty)
     - [Secrets](#secrets)
   - [Liveness and Readiness Probes](#liveness-and-readiness-probes)
@@ -624,6 +626,32 @@ Join [K8s announcement group](https://groups.google.com/forum/#!forum/kubernetes
 
 - [downwardAPI](https://kubernetes.io/docs/tasks/inject-data-application/downward-api-volume-expose-pod-information/) -  is used to make `downward API` data available to applications. It mounts a directory and writes the requested data in plain text files.
 
+### PresistentVolume
+
+- Provisioned storage in the cluster
+- Cluster resource
+- Volume plugins has independent lifecycle from pods
+- Volumes share the lifecycle of the pod, Persistent volument doesn't
+- API object(YAML) details the implementation
+
+### PresistentVolumeClaim
+
+- Request for Storage part of cluster resource
+- Pods consume node resources, PVCs consumes PV resources
+- Pods can request specific CPU and memory:PV's can request specific size and access mode.
+
+Lifecycle is PV's are Provisioned and then bound to PVC's and PV's are reclaimed once PVC's are released.
+
+- Provisioning
+  - Static
+    - Administrator creates PV's in the K8s API and made availble for consumption
+  - Dynamic
+    - Used when one of the static PV's match the PVC and its strictly based on `StorageClasses`
+    - PVC must request a created and configured storage class
+    - Claims requesting for nameless classes disable Dynamic provisioning
+  
+  To enable dynamic storage provisioning, `DefaultStorageClass` addmission controller on the API server must be enabled.
+
 ## Secuirty
 
 ### [Secrets](https://kubernetes.io/docs/concepts/configuration/secret/)
@@ -631,6 +659,7 @@ Join [K8s announcement group](https://groups.google.com/forum/#!forum/kubernetes
 ## [Liveness and Readiness Probes](https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/)
 
 - The kubelet uses liveness probes to know when to restart a Container. For example, liveness probes could catch a deadlock, where an application is running, but unable to make progress. Restarting a Container in such a state can help to make the application more available despite bugs.
+
 - The kubelet uses readiness probes to know when a Container is ready to start accepting traffic. A Pod is considered ready when all of its Containers are ready. One use of this signal is to control which Pods are used as backends for Services. When a Pod is not ready, it is removed from Service load balancers.
 
 
