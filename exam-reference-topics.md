@@ -27,7 +27,7 @@ kgc = 'kubectl get componentstatus'
 source <(kubectl completion bash)
 ```
 
-- tmux - shortcuts
+- [tmux](https://gist.github.com/MohamedAlaa/2961058) - shortcuts
 
 ```bash
 # start a new session with the name mysession and window mywindow
@@ -44,6 +44,8 @@ $ tmux new -s mysession -n mywindow
 |     `Ctrl + b 0..9`      |            Switch/Select Window by number            |
 | `:swap-window -s 2 -t 1` | Reorder window, swap window number 2(src) and 1(dst) |
 |   `:swap-window -t -1`   |   Move current window to the left by one position    |
+| `Ctrl + b %`  |vertical split|
+|`Ctrl + b "`|  horizontal split|
 
 ## [Configuration Tips](https://kubernetes.io/docs/concepts/configuration/overview/#general-configuration-tips)
 
