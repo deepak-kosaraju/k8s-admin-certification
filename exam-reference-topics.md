@@ -45,9 +45,13 @@ $ tmux new -s mysession -n mywindow
 | `:swap-window -s 2 -t 1` | Reorder window, swap window number 2(src) and 1(dst) |
 |   `:swap-window -t -1`   |   Move current window to the left by one position    |
 
+## [Configuration Tips](https://kubernetes.io/docs/concepts/configuration/overview/#general-configuration-tips)
+
 ## Core Concepts 19%
 
-- K8s API primitives
+- Understand the Kubernetes API primitives.
+- Understand the Kubernetes cluster architecture.
+- Understand Services and other network primitives.
 - Diff between POD, Deployment and a Service
 - Diff between POD and a Node
 - What is NetworkPolicy?
@@ -60,6 +64,16 @@ $ tmux new -s mysession -n mywindow
 
 ## Installation, Configuration & Validation 12%
 
+- Design a Kubernetes cluster.
+- Instal Kubernetes masters and nodes.
+- Configure secure cluster communications.
+- Configurea Highly-Available Kubernetes cluster.
+- Know where to get the Kubernetes release binaries
+- Provision underlying infrastructure to deploy a Kubernetes cluster.
+- Choose a network solution.
+- Choose your Kubernetes infrastructure configuration.
+- Run end-to-end tests on your cluster.
+- Run Node end-to-end tests
 - Things to run K8s Cluster
 - Technology to make sure cluster communications are secure
 - Components of K8s to have HA setup - `etcd, api`
@@ -67,6 +81,13 @@ $ tmux new -s mysession -n mywindow
 
 ## Security 12%
 
+- Know how to configure authentication and authorization.
+- Understand Kubernetes security primitives.
+- Know to configure network policies.
+- Create and manage TLS certificates for cluster components
+- Work with images securely
+- Define security contexts
+- Secure persistent key value store
 - Authentication & Authorization
 - What is default security state of POD networking and how it can be changed
 - Know how to NetworkPolicies and applying them to PODS
@@ -80,11 +101,17 @@ $ tmux new -s mysession -n mywindow
 
 - Detail understanding of K8s Upgrade Process
 - Evict all PODS from a node to prepare for both Operatings System(S/W) (or) H/W Maintenance
+- Implement backup and restore methodologies.
 - Put node back in to service
-- Backup and restore methodologies
 
 ## [Networking (11%)](https://kubernetes.io/docs/concepts/cluster-administration/networking/)
 
+- Understand the networking configuration on the cluster nodes.
+- Understand Pod networking concepts.
+- Understand service networking.
+- Deploy and configure network load balancer.
+- Know how to use Ingres rules
+- Know how to configure and use the cluser DNS
 - K8s networking model and how its implemented
 - How many IP's does a POD get and does the answer change based on how many containers are in the POD? - `One IP address per POD`
 - How to create a service and its types
@@ -97,8 +124,10 @@ $ tmux new -s mysession -n mywindow
 
 ## Troubleshooting 10%
 
-## [Configuration Tips](https://kubernetes.io/docs/concepts/configuration/overview/#general-configuration-tips)
-
+- Troubleshoot application failure.
+- Troubleshoot control plane failure.
+- Troubleshoot worker node failure.
+- Troubleshoot networking
 - components to check if application in a deployment wasn't working correctly
 - what would you check and do if API wasn't responding
 - What if node isn't behaving as it should what are some ways to check it out
@@ -106,7 +135,7 @@ $ tmux new -s mysession -n mywindow
   
 ## Application Lifecycle Management 8%
 
-- Understand deployments and how to perform updates and rollback
+- Understand deployments and how to perform rolling updates and rollback
 - various ways to configure applications
 - How does information get from CLI (or) yaml in to the container and ultimately to application
 - manually scale-up/scale-down a deployment
@@ -116,10 +145,12 @@ $ tmux new -s mysession -n mywindow
 ## Storage 7%
 
 - create and allocate persistent volumes
+- Understand persistent volumen claims primitive
+- Understand Kubernetes storage objects
+- Know how to configure applications with persistent storage
 - What is the storageClass and why are they important
 - What are 3 mains access modes for persistent volumes
 - Diff between persistent volumen claim and persistent volume and their lifecycle and how are they linked
-- configure application with persistent storage in a  POD
 
 ## Logging / Monitoring 5%
 
@@ -131,11 +162,11 @@ $ tmux new -s mysession -n mywindow
   
 ## Scheduling 5%
 
-- How do you label and Pod (or) Node
-- How do you schedule a specific POD to a specfic node
+- How do you label a Pod (or) Node
+- How do you schedule a specific POD to a specfic node using lable selector
 - DaemonSet
 - How resource limits can effect POD scheduling
 - Run multiple scheduler and how to configure pod to use specific scheduler
 - Can a POD be scheduled without a scheduler, if so How?
 - Look at events logs of a scheduler
-- how to configure default K8s Scheduler and where does it run
+- how to configure default K8s Scheduler and where does it run.
