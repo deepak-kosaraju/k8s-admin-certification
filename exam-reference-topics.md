@@ -46,6 +46,7 @@ $ tmux new -s mysession -n mywindow
 |   `:swap-window -t -1`   |   Move current window to the left by one position    |
 | `Ctrl + b %`  |vertical split|
 |`Ctrl + b "`|  horizontal split|
+|`Ctrl + b z`| Select a pane to expand, very useful for copy/paste of STDOUT/ERR to Clipboard buffer |
 
 ## [Configuration Tips](https://kubernetes.io/docs/concepts/configuration/overview/#general-configuration-tips)
 
