@@ -1,6 +1,37 @@
 
 # [kubectl](https://kubernetes.io/docs/reference/kubectl/overview/) Command References
 
+## Useful Links
+
+[using-kubectl-to-jumpstart-a-yaml-file](https://blog.heptio.com/using-kubectl-to-jumpstart-a-yaml-file-heptioprotip-6f5b8a63a3ea)
+
+[resource-short-names](https://blog.heptio.com/kubectl-resource-short-names-heptioprotip-c8eff9fb7202)
+
+| Short name | Full name                  |
+| ---------- | -------------------------- |
+| csr        | certificatesigningrequests |
+| cs         | componentstatuses          |
+| cm         | configmaps                 |
+| ds         | daemonsets                 |
+| deploy     | deployments                |
+| ep         | endpoints                  |
+| ev         | events                     |
+| hpa        | horizontalpodautoscalers   |
+| ing        | ingresses                  |
+| limits     | limitranges                |
+| ns         | namespaces                 |
+| no         | nodes                      |
+| pvc        | persistentvolumeclaims     |
+| pv         | persistentvolumes          |
+| po         | pods                       |
+| pdb        | poddisruptionbudgets       |
+| psp        | podsecuritypolicies        |
+| rs         | replicasets                |
+| rc         | replicationcontrollers     |
+| quota      | resourcequotas             |
+| sa         | serviceaccounts            |
+| svc        | services                   |
+
 ## Nodes
 
 `kubectl get nodes` - will give the current status of all nodes
