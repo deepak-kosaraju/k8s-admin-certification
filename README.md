@@ -3,7 +3,7 @@
 - [Certified Kubernetes Administrator(CKA)](#certified-kubernetes-administratorcka)
   - [Useful Links](#useful-links)
   - [Basic Kubernetes Architecture](#basic-kubernetes-architecture)
-    - [Node Type and their Components (19%)](#node-type-and-their-components-19)
+    - [Kubernetes Node Types and their Components (19%)](#kubernetes-node-types-and-their-components-19)
   - [API Premitives (or) Cluster Objects](#api-premitives-or-cluster-objects)
     - [Common Cluster Objects](#common-cluster-objects)
     - [Names and UIDs](#names-and-uids)
@@ -86,14 +86,23 @@
 
 ![Architecture](https://lms.quickstart.com/custom/858487/images/Kubernetes%20Architecture.png)
 
-### [Node Type and their Components](https://kubernetes.io/docs/concepts/overview/components/) (19%)
+### [Kubernetes Node Types and their Components](https://kubernetes.io/docs/concepts/overview/components/) (19%)
 
 - `Master` - cluster’s control plane with HA setup (or) single node instance
   - `kube-apiserver` - answers api call
   - `etcd` - key/value store used by API Server for configuration and other persistent storage needs
   - `kube-scheduler` - Determins which nodes are responsable for `PODS` and their respective containers as they are up in the cluster
-  - `Cloud Controler Manager` - split out in to several containers depends on cloud platform we are running - responsible for persistatnt storage, routes for networking
-  - `kube-controller-manager` - make all of the above avaialble to cloud through this service (or) we can block this if not needed
+  - `kube-controller-manager` - Component on the master that runs [controllers](https://kubernetes.io/docs/admin/kube-controller-manager/) .
+  
+    Logically, each controller is a separate process, but to reduce complexity, they are all compiled into a single binary and run in a single process.
+
+    These controllers include:
+    - Node Controller: Responsible for noticing and responding when nodes go down.
+    - Replication Controller: Responsible for maintaining the correct number of pods for every replication controller object in the system.
+    - Endpoints Controller: Populates the Endpoints object (that is, joins Services & Pods).
+    - Service Account & Token Controllers: Create default accounts and API access tokens for new namespaces.
+
+  - `cloud-controler-manager` - split out in to several containers depends on cloud platform we are running - responsible for persistatnt storage, routes for networking
 
 - `Nodes` - workers/minions are work force of the cluster
   - `kublet` - takes orders from master to run `PODS`

@@ -34,19 +34,20 @@ source <(kubectl completion bash)
 $ tmux new -s mysession -n mywindow
 ```
 
-|           Keys           |                     Description                      |
-| :----------------------: | :--------------------------------------------------: |
-|       `Ctrl + b c`       |                  Create new window                   |
-|       `Ctrl + b ,`       |                Rename current window                 |
-|       `Ctrl + b &`       |                 Close Current Window                 |
-|       `Ctrl + b p`       |                   Previous Window                    |
-|       `Ctrl + b n`       |                     Next Window                      |
-|     `Ctrl + b 0..9`      |            Switch/Select Window by number            |
-| `:swap-window -s 2 -t 1` | Reorder window, swap window number 2(src) and 1(dst) |
-|   `:swap-window -t -1`   |   Move current window to the left by one position    |
-| `Ctrl + b %`  |vertical split|
-|`Ctrl + b "`|  horizontal split|
-|`Ctrl + b z`| Select a pane to expand, very useful for copy/paste of STDOUT/ERR to Clipboard buffer |
+|           Keys            |                                      Description                                      |
+| :-----------------------: | :-----------------------------------------------------------------------------------: |
+|       `Ctrl + b c`        |                                   Create new window                                   |
+|       `Ctrl + b ,`        |                                 Rename current window                                 |
+|       `Ctrl + b &`        |                                 Close Current Window                                  |
+|       `Ctrl + b p`        |                                    Previous Window                                    |
+|       `Ctrl + b n`        |                                      Next Window                                      |
+|      `Ctrl + b 0..9`      |                            Switch/Select Window by number                             |
+| `:swap-window -s 2 -t 1`  |                 Reorder window, swap window number 2(src) and 1(dst)                  |
+|   `:swap-window -t -1`    |                    Move current window to the left by one position                    |
+|       `Ctrl + b %`        |                                    vertical split                                     |
+|       `Ctrl + b "`        |                                   horizontal split                                    |
+|       `Ctrl + b z`        | Select a pane to expand, very useful for copy/paste of STDOUT/ERR to Clipboard buffer |
+| `:setw synchronize-panes` |            option to send each pane the same keyboard input simultaneously            |
 
 ## [Configuration Tips](https://kubernetes.io/docs/concepts/configuration/overview/#general-configuration-tips)
 
