@@ -12,13 +12,13 @@ kubectl create deployment nginx  --image=nginx:1.7.8  --dry-run -o yaml | sed 's
 
 ## Bash alias and TMUX shortcuts 
 
-- `.bashrc` - Aliases.
+- In `.bashrc` set following aliases and source it
 
 ```bash
-k = 'kubectl'
-kgp = 'kubectl get pods'
-kgs = 'kubectl get svc'
-kgc = 'kubectl get componentstatus'
+alias k='kubectl --kubeconfig=<location to kubeconfig file>'
+alias kgp='k get pods'
+alias kgs='k get svc'
+alias kgc='k get cs'
 ```
 
 - Autocomplete kubectl
@@ -27,27 +27,41 @@ kgc = 'kubectl get componentstatus'
 source <(kubectl completion bash)
 ```
 
-- [tmux](https://gist.github.com/MohamedAlaa/2961058) - shortcuts
+- [tmux](https://hackernoon.com/a-gentle-introduction-to-tmux-8d784c404340)
+  
+- [Cheatsheet-1](https://gist.github.com/MohamedAlaa/2961058)
+- [Cheatsheet-2](https://tmuxcheatsheet.com/)
 
 ```bash
 # start a new session with the name mysession and window mywindow
 $ tmux new -s mysession -n mywindow
 ```
 
-|           Keys            |                                      Description                                      |
-| :-----------------------: | :-----------------------------------------------------------------------------------: |
-|       `Ctrl + b c`        |                                   Create new window                                   |
-|       `Ctrl + b ,`        |                                 Rename current window                                 |
-|       `Ctrl + b &`        |                                 Close Current Window                                  |
-|       `Ctrl + b p`        |                                    Previous Window                                    |
-|       `Ctrl + b n`        |                                      Next Window                                      |
-|      `Ctrl + b 0..9`      |                            Switch/Select Window by number                             |
-| `:swap-window -s 2 -t 1`  |                 Reorder window, swap window number 2(src) and 1(dst)                  |
-|   `:swap-window -t -1`    |                    Move current window to the left by one position                    |
-|       `Ctrl + b %`        |                                    vertical split                                     |
-|       `Ctrl + b "`        |                                   horizontal split                                    |
-|       `Ctrl + b z`        | Select a pane to expand, very useful for copy/paste of STDOUT/ERR to Clipboard buffer |
-| `:setw synchronize-panes` |            option to send each pane the same keyboard input simultaneously            |
+Typing your Tmux prefix (commonly
+
+`Ctrl + b`
+
+(or)
+
+`Ctrl + a`
+
+and then following keys to take necessary actions.
+
+|           Keys            |                                                      Description                                                      |
+| :-----------------------: | :-------------------------------------------------------------------------------------------------------------------: |
+|            `c`            |                                                   Create new window                                                   |
+|            `,`            |                                                 Rename current window                                                 |
+|            `&`            |                                                 Close Current Window                                                  |
+|            `p`            |                                                    Previous Window                                                    |
+|            `n`            |                                                      Next Window                                                      |
+|          `0..9`           |                                            Switch/Select Window by number                                             |
+| `:swap-window -s 2 -t 1`  |                                 Reorder window, swap window number 2(src) and 1(dst)                                  |
+|   `:swap-window -t -1`    |                                    Move current window to the left by one position                                    |
+|            `%`            |                                                    vertical split                                                     |
+|            `"`            |                                                   horizontal split                                                    |
+|            `z`            |                 Select a pane to expand, very useful for copy/paste of STDOUT/ERR to Clipboard buffer                 |
+| `:setw synchronize-panes` | [option to send each pane the same keyboard input simultaneously](https://sanctum.geek.nz/arabesque/sync-tmux-panes/) |
+|          `space`          |                                              Toggle between pane layouts                                              |
 
 ## [Configuration Tips](https://kubernetes.io/docs/concepts/configuration/overview/#general-configuration-tips)
 

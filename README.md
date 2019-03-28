@@ -88,7 +88,7 @@
 
 ### [Kubernetes Node Types and their Components](https://kubernetes.io/docs/concepts/overview/components/) (19%)
 
-- `Master` - cluster’s control plane with HA setup (or) single node instance
+- [Master/Control Plane](https://github.com/kubernetes/community/blob/master/contributors/design-proposals/architecture/architecture.md#cluster-control-plane-aka-master) - cluster’s control plane with HA setup (or) single node instance
   - `kube-apiserver` - answers api call
   - `etcd` - key/value store used by API Server for configuration and other persistent storage needs
   - `kube-scheduler` - Determins which nodes are responsable for `PODS` and their respective containers as they are up in the cluster
@@ -104,7 +104,7 @@
 
   - `cloud-controler-manager` - split out in to several containers depends on cloud platform we are running - responsible for persistatnt storage, routes for networking
 
-- `Nodes` - workers/minions are work force of the cluster
+- [Nodes/Workers](https://github.com/kubernetes/community/blob/master/contributors/design-proposals/architecture/architecture.md#the-kubernetes-node) - workers/minions are work force of the cluster
   - `kublet` - takes orders from master to run `PODS`
   - `kube-proxy` - assist with `Container Network Interface(CNI)` with routing traffic around the cluster
   - `POD` - one (or) more containers run as part of `POD` which are considered disposablea and replacable
