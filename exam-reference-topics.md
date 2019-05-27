@@ -2,6 +2,8 @@
 
 From exam point use `create` with `--dry-run -o yaml` to create the config and modify necessary objects using vim (or) nano editor, for example:
 
+**Clone** [Kubernetese website](https://github.com/kubernetes/website.git) _repo to get example `yaml` reference files_
+
 **For example**: Create a deployment with image nginx:1.7.8, called nginx, having 2 replicas, defining port 80 as the port that this container exposes (don't create a service for this deployment)
 
 Ref: [dgkanatsios/CKAD-exercises/](https://github.com/dgkanatsios/CKAD-exercises/blob/master/c.pod_design.md#create-a-deployment-with-image-nginx178-called-nginx-having-2-replicas-defining-port-80-as-the-port-that-this-container-exposes-dont-create-a-service-for-this-deployment)
