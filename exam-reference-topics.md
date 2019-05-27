@@ -14,16 +14,18 @@ kubectl create deployment nginx  --image=nginx:1.7.8  --dry-run -o yaml | sed 's
 
 ## Bash alias and TMUX shortcuts 
 
-- In `.bashrc` set following aliases and source it
+- In `.bashrc` set following [aliases](https://github.com/robbyrussell/oh-my-zsh/blob/master/plugins/kubectl/kubectl.plugin.zsh) and source it
 
 ```bash
+source <(kubectl completion bash)
 alias k='kubectl --kubeconfig=<location to kubeconfig file>'
 alias kgp='k get pods'
 alias kgs='k get svc'
 alias kgc='k get cs'
+complete -F __start_kubectl k
 ```
 
-- Autocomplete kubectl
+- Autocomplete [kubectl](https://kubernetes.io/docs/reference/kubectl/cheatsheet/#kubectl-autocomplete)
 
 ```bash
 source <(kubectl completion bash)
