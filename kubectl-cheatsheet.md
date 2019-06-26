@@ -7,6 +7,30 @@
 
 [resource-short-names](https://blog.heptio.com/kubectl-resource-short-names-heptioprotip-c8eff9fb7202)
 
+`kubectl api-resources` # get list of all api-resoruces and their short names
+`kubectl api-resources --verbs=get --namespaced=false -o wide --api-group=''` # filter list of api-resoruces that have verb as 'get' and not part of namespace and not part of any api-group.
+
+```bash
+kubectl api-resources --verbs=get --namespaced=false -o wide --api-group=''
+NAME                SHORTNAMES   APIGROUP   NAMESPACED   KIND               VERBS
+componentstatuses   cs                      false        ComponentStatus    [get list]
+namespaces          ns                      false        Namespace          [create delete get list patch update watch]
+nodes               no                      false        Node               [create delete deletecollection get list patch update watch]
+persistentvolumes   pv                      false        PersistentVolume   [create delete deletecollection get list patch update watch]
+```
+
+`kubectl api-resources --verbs=get --namespaced -o wide --api-group=extensions` # like above this will show namespaced api-resoruces part of api-group extensions, and few of them are `deployment`, `daemonset`, `replicasets` etc..
+
+```bash
+kubectl api-resources --verbs=get --namespaced -o wide --api-group=extensions
+NAME              SHORTNAMES   APIGROUP     NAMESPACED   KIND            VERBS
+daemonsets        ds           extensions   true         DaemonSet       [create delete deletecollection get list patch update watch]
+deployments       deploy       extensions   true         Deployment      [create delete deletecollection get list patch update watch]
+ingresses         ing          extensions   true         Ingress         [create delete deletecollection get list patch update watch]
+networkpolicies   netpol       extensions   true         NetworkPolicy   [create delete deletecollection get list patch update watch]
+replicasets       rs           extensions   true         ReplicaSet      [create delete deletecollection get list patch update watch]
+```
+
 | Short name | Full name                  |
 | ---------- | -------------------------- |
 | csr        | certificatesigningrequests |
@@ -47,12 +71,7 @@ Labels:             beta.kubernetes.io/arch=amd64
                     kubernetes.io/hostname=deepakk3c.mylabserver.com
 Annotations:        flannel.alpha.coreos.com/backend-data: {"VtepMAC":"36:b3:04:3f:9a:71"}
                     flannel.alpha.coreos.com/backend-type: vxlan
-                    flannel.alpha.coreos.com/kube-subnet-manager: true
-                    flannel.alpha.coreos.com/public-ip: 172.31.40.133
-                    kubeadm.alpha.kubernetes.io/cri-socket: /var/run/dockershim.sock
-                    node.alpha.kubernetes.io/ttl: 0
-                    volumes.kubernetes.io/controller-managed-attach-detach: true
-CreationTimestamp:  Sat, 17 Nov 2018 21:50:21 +0000
+...
 Taints:             <none>
 Unschedulable:      false
 Conditions:
@@ -117,17 +136,59 @@ kube-system   coredns-576cbf47c7-w9g2n                            1/1     Runnin
 ...
 kube-system   etcd-deepakk1c.mylabserver.com                      1/1     Running   2          32h   <master-api-server-ip>    deepakk1c.mylabserver.com   <none>
 kube-system   kube-apiserver-deepakk1c.mylabserver.com            1/1     Running   2          32h   <master-api-server-ip>    deepakk1c.mylabserver.com   <none>
-kube-system   kube-controller-manager-deepakk1c.mylabserver.com   1/1     Running   2          32h   <master-api-server-ip>    deepakk1c.mylabserver.com   <none>
-kube-system   kube-flannel-ds-amd64-28v7x                         1/1     Running   2          32h   172.31.40.165   deepakk2c.mylabserver.com   <none>
+kube-system   kube-controller-manager-deepakk1c.mylabserver.com   1/1     Running   2          32h   <master-api-server-ip>
 ...
-kube-system   kube-proxy-4rnwb                                    1/1     Running   2          32h   172.31.40.165   deepakk2c.mylabserver.com   <none>
-...
-kube-system   kube-scheduler-deepakk1c.mylabserver.com            1/1     Running   2          32h   <master-api-server-ip>    deepakk1c.mylabserver.com   <none>
 ```
 
 `kubectl get pods -n kube-system` - to pull all pods from a specific namespace
 
-`kubectl get pods -l key=value -o wise` - gives the result of all `PODS` using lable selector
+`kubectl get pods -l key=value -o wide` - gives the result of all `PODS` using lable selector
+
+`kubectl get po --field-selector=status.phase=Running,metadata.namespace=default` - using --field-selector to filter the output
+
+```bash
+$ kubectl get po --field-selector=status.phase=Running,metadata.namespace=default
+NAMESPACE   NAME                                READY   STATUS    RESTARTS   AGE
+default     nginx-dbddb74b8-59b8m               1/1     Running   1          34h
+default     nginx-dbddb74b8-9hzp8               1/1     Running   1          34h
+default     nginx-dbddb74b8-k2x6m               1/1     Running   1          34h
+default     nginx-deployment-5c689d88bb-bmhlg   1/1     Running   0          24m
+default     nginx-deployment-5c689d88bb-xcjhc   1/1     Running   0          24m
+```
+
+`kubectl get pods -o custom-columns=POD:metadata.name,NODE:spec.nodeName --sort-by spec.nodeName` - custom column names and sort by sepcific column
+
+```bash
+$ kubectl get pods -o custom-columns=POD:metadata.name,NODE:spec.nodeName --sort-by spec.nodeName -n kube-system
+POD                                                 NODE
+coredns-576cbf47c7-q8vrl                            deepakk1c.mylabserver.com
+etcd-deepakk1c.mylabserver.com                      deepakk1c.mylabserver.com
+kube-apiserver-deepakk1c.mylabserver.com            deepakk1c.mylabserver.com
+kube-controller-manager-deepakk1c.mylabserver.com   deepakk1c.mylabserver.com
+kube-scheduler-deepakk1c.mylabserver.com            deepakk1c.mylabserver.com
+...
+```
+
+Creating busybox POD for testing access to apps inside other PODS in the cluster with-in same/differnet namespace
+
+```bash
+$ cat << EOF | kubectl create -f -
+> apiVersion: v1
+> kind: Pod
+> metadata:
+>   name: busybox
+> spec:
+>   containers:
+>     - name: busybox
+>       image: radial/busyboxplus:curl
+>       args:
+>       - sleep
+>       - "1000"
+> EOF
+pod/busybox created
+
+kubectl exec busybox -- curl -sI http://< SVC IP of your APP >:80
+```
 
 ## Deployments
 
