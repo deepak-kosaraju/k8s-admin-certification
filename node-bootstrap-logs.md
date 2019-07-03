@@ -1,6 +1,6 @@
-# Bootstrap Event Logs
+# Bootstrap Worker Node to existing Cluster
 
-## Adding node node to the cluster
+## Adding worker node to the cluster
 
 ```bash
 sudo kubeadm join <master-api-server-ip>:6443 --token ahasi5.aytigy5460jxp8ea --discovery-token-ca-cert-hash sha256:ebb7d9bc5b874d26b5b5ad5a1ab15f9fb25b9ba79c96c0fb4685733b6959c1fa
@@ -8,7 +8,7 @@ sudo kubeadm join <master-api-server-ip>:6443 --token ahasi5.aytigy5460jxp8ea --
   [WARNING RequiredIPVSKernelModulesAvailable]: the IPVS proxier will not be used, because the following required kernel modules are not loaded: [ip_vs_sh ip_vs ip_vs_rr ip_vs_wrr] or no builtin kernel ipvs support: map[ip_vs:{} ip_vs_rr:{} ip_vs_wrr:{} ip_vs_sh:{} nf_conntrack_ipv4:{}]
 you can solve this problem with following methods:
  1. Run 'modprobe -- ' to load missing kernel modules;
-2. Provide the missing builtin kernel ipvs support
+1. Provide the missing builtin kernel ipvs support
 
 [discovery] Trying to connect to API Server "<master-api-server-ip>:6443"
 [discovery] Created cluster-info discovery client, requesting info from "https://<master-api-server-ip>:6443"
@@ -27,4 +27,4 @@ This node has joined the cluster:
 * The Kubelet was informed of the new secure connection details.
 
 Run 'kubectl get nodes' on the master to see this node join the cluster.
-```
+```gl
